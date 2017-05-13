@@ -218,16 +218,16 @@ describe('DatePicker', () => {
   })
 
   it('should mount and unmount properly', done => {
-    var TestComponent = React.createClass({
-      displayName: 'TestComponent',
+    class TestComponent extends React.Component {
+      constructor (props) {
+        super(props)
+        this.state = { mounted: true }
+      }
 
-      getInitialState () {
-        return { mounted: true }
-      },
       render () {
         return this.state.mounted ? <DatePicker /> : null
       }
-    })
+    }
     var element = TestUtils.renderIntoDocument(<TestComponent />)
     element.setState({ mounted: false }, done)
   })
@@ -361,6 +361,13 @@ describe('DatePicker', () => {
       expect(data.callback.calledOnce).to.be.true
       var result = data.callback.args[0][0]
       expect(result.format(data.testFormat)).to.equal(data.copyM.format(data.testFormat))
+    })
+    it('should update the selected date on manual input', () => {
+      var data = getOnInputKeyDownStuff()
+      TestUtils.Simulate.change(data.nodeInput, {target: {value: '02/02/2017'}})
+      TestUtils.Simulate.keyDown(data.nodeInput, {key: 'Enter', keyCode: 13, which: 13})
+      data.copyM = moment('02/02/2017')
+      expect(data.callback.args[0][0].format(data.testFormat)).to.equal(data.copyM.format(data.testFormat))
     })
     it('should not select excludeDates', () => {
       var data = getOnInputKeyDownStuff({ excludeDates: [moment().subtract(1, 'days')] })
