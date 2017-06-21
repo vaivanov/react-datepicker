@@ -7,8 +7,8 @@ import { isSameDay, isDayDisabled, isDayInRange, getEffectiveMinDate, getEffecti
 import moment from 'moment'
 import onClickOutside from 'react-onclickoutside'
 
-var outsideClickIgnoreClass = 'react-datepicker-ignore-onclickoutside'
-var WrappedCalendar = onClickOutside(Calendar)
+const outsideClickIgnoreClass = 'react-datepicker-ignore-onclickoutside'
+const WrappedCalendar = onClickOutside(Calendar)
 
 /**
  * General datepicker component.
@@ -16,6 +16,7 @@ var WrappedCalendar = onClickOutside(Calendar)
 
 export default class DatePicker extends React.Component {
   static propTypes = {
+    allowSameDay: PropTypes.bool,
     autoComplete: PropTypes.string,
     autoFocus: PropTypes.bool,
     calendarClassName: PropTypes.string,
@@ -80,6 +81,7 @@ export default class DatePicker extends React.Component {
 
   static get defaultProps () {
     return {
+      allowSameDay: false,
       dateFormat: 'L',
       dateFormatCalendar: 'MMMM YYYY',
       onChange () {},
@@ -94,12 +96,7 @@ export default class DatePicker extends React.Component {
       popoverAttachment: 'top left',
       popoverTargetAttachment: 'bottom left',
       popoverTargetOffset: '10px 0',
-      tetherConstraints: [
-        {
-          to: 'window',
-          attachment: 'together'
-        }
-      ],
+      tetherConstraints: [{ to: 'window', attachment: 'together' }],
       utcOffset: moment().utcOffset(),
       monthsShown: 1,
       withPortal: false
@@ -108,10 +105,14 @@ export default class DatePicker extends React.Component {
 
   constructor (props) {
     super(props)
-    this.state = this.getInitialState()
+    this.state = this.calcInitialState()
   }
 
-  getInitialState = () => {
+  componentWillUnmount () {
+    this.clearPreventFocusTimeout()
+  }
+
+  calcInitialState = () => {
     const defaultPreSelection =
       this.props.openToDate ? moment(this.props.openToDate)
       : this.props.selectsEnd && this.props.startDate ? moment(this.props.startDate)
@@ -131,16 +132,6 @@ export default class DatePicker extends React.Component {
     }
   }
 
-  componentWillUpdate (nextProps, nextState) {
-    if (nextProps.selected !== this.props.selected) {
-      this.setPreSelection(nextProps.selected)
-    }
-  }
-
-  componentWillUnmount () {
-    this.clearPreventFocusTimeout()
-  }
-
   clearPreventFocusTimeout = () => {
     if (this.preventFocusTimeout) {
       clearTimeout(this.preventFocusTimeout)
@@ -154,7 +145,7 @@ export default class DatePicker extends React.Component {
   setOpen = (open) => {
     this.setState({
       open: open,
-      preSelection: open && this.state.open ? this.state.preSelection : this.getInitialState().preSelection
+      preSelection: open && this.state.open ? this.state.preSelection : this.calcInitialState().preSelection
     })
   }
 
@@ -230,7 +221,7 @@ export default class DatePicker extends React.Component {
       return
     }
 
-    if (!isSameDay(this.props.selected, changedDate)) {
+    if (!isSameDay(this.props.selected, changedDate) || this.props.allowSameDay) {
       if (changedDate !== null) {
         if (this.props.selected) {
           changedDate = moment(changedDate).set({
