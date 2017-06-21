@@ -2,7 +2,7 @@
   "author": "HackerOne",
   "name": "react-datepicker-inlinefix",
   "description": "A simple and reusable datepicker component for React",
-  "version": "0.48.0",
+  "version": "0.48.2",
   "license": "MIT",
   "homepage": "https://github.com/vaivanov/react-datepicker",
   "main": "dist/react-datepicker.min.js",
